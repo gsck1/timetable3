@@ -142,6 +142,13 @@ function yearChanged() {
         box.classList.remove("hidden");
     } else {
         box.classList.add("hidden");
+
+        const stream =
+            document.getElementById("studentStream");
+
+        if (stream) {
+            stream.value = "";
+        }
     }
 }
 
@@ -247,9 +254,12 @@ function loadTeachersDropdown() {
 }
 
 function getStudentClass() {
-
     const year = clean(
         document.getElementById("studentYear").value
+    );
+
+    const stream = clean(
+        document.getElementById("studentStream").value
     );
 
     if (
@@ -257,11 +267,6 @@ function getStudentClass() {
         year === "BCA-II" ||
         year === "BCA-III"
     ) {
-
-        let stream = clean(
-            document.getElementById("studentStream").value
-        );
-
         if (stream === "AI") {
             return year + " (AI)";
         }
@@ -269,8 +274,6 @@ function getStudentClass() {
         if (stream === "DS") {
             return year + " (DS)";
         }
-
-        return stream;
     }
 
     return year;
