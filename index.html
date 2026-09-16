@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCA Time Table Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <img src="https://gsck.ac.in/html/egovpolicy/image005.png" alt="G. S. Science, Arts & Commerce College, Khamgaon" class="college-img" id="collegeBannerImg" onerror="this.src='https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800'">
+    <h1>G. S. Science, Arts & Commerce College, Khamgaon</h1>
+    <p>Department of Computer Science & Application</p>
+    <b>BCA Time Table Management</b>
+</header>
+
+<div class="container">
+
+    <div id="home" class="card">
+        <h2>Select User</h2>
+        <div class="menu">
+            <button onclick="showStudent()">🎓 Student</button>
+            <button onclick="showTeacher()">👨‍🏫 Teacher</button>
+            <button onclick="showAdmin()">🔐 Admin</button>
+        </div>
+    </div>
+
+    <div id="student" class="card hidden">
+        <h2>🎓 Student Portal</h2>
+        <label>Student Name</label>
+        <input id="studentName" placeholder="Enter your name">
+
+        <label>Year</label>
+        <select id="studentYear" onchange="yearChanged()">
+            <option value="">Select Year</option>
+            <option value="BCA-I">BCA-I</option>
+            <option value="BCA-II">BCA-II</option>
+            <option value="BCA-III">BCA-III</option>
+        </select>
+
+        <div id="streamBox" class="hidden">
+            <label>3rd Year Stream</label>
+            <select id="studentStream">
+                <option value="">Select Stream</option>
+                <option value="BCA-III (AI)">AI</option>
+                <option value="BCA-III (DS)">DS</option>
+            </select>
+        </div>
+
+        <div class="view-toggle">
+            <button id="studentBtnDaily" class="active" onclick="setStudentView('daily')">Daily Schedule</button>
+            <button id="studentBtnWeekly" onclick="setStudentView('weekly')">Weekly Schedule</button>
+        </div>
+
+        <div id="studentDateBox">
+            <label>Select Date</label>
+            <input type="date" id="studentDate" onchange="loadStudentTimetableDisplay()">
+        </div>
+
+        <button onclick="loadStudentTimetableDisplay()">Show Timetable</button>
+        <button class="back" onclick="goHome()">Back</button>
+
+        <div id="studentResult"></div>
+    </div>
+
+    <div id="teacher" class="card hidden">
+        <h2>👨‍🏫 Teacher Portal</h2>
+        <label>Select Teacher</label>
+        <select id="teacherSelect">
+            <option value="">Select Teacher</option>
+        </select>
+
+        <div class="view-toggle">
+            <button id="teacherBtnDaily" class="active" onclick="setTeacherView('daily')">Daily Schedule</button>
+            <button id="teacherBtnWeekly" onclick="setTeacherView('weekly')">Weekly Schedule</button>
+            <button id="teacherBtnAvailability" onclick="setTeacherView('availability')">🔍 Check Available Slots & Rooms</button>
+        </div>
+
+        <div id="teacherDateBox">
+            <label>Select Date</label>
+            <input type="date" id="teacherDate" onchange="loadTeacherTimetableDisplay()">
+        </div>
+
+        <div id="teacherAvailabilityBox" class="hidden">
+            <label>Select Date to Check Open Rooms/Slots</label>
+            <input type="date" id="teacherCheckDate" onchange="checkTeacherAvailability()">
+        </div>
+
+        <button id="teacherActionBtn" onclick="loadTeacherTimetableDisplay()">Show Timetable</button>
+        <button class="back" onclick="goHome()">Back</button>
+
+        <div id="teacherResult"></div>
+    </div>
+
+    <div id="adminLogin" class="card hidden">
+        <h2>🔐 Admin Login</h2>
+        <label>Admin ID</label>
+        <input id="adminId" placeholder="Enter Admin ID">
+        <label>Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter Password">
+
+        <button onclick="adminLogin()">Login</button>
+        <button class="back" onclick="goHome()">Back</button>
+
+        <p id="loginMsg"></p>
+    </div>
+
+    <div id="adminPanel" class="card hidden">
+        <h2>👨‍💼 Admin / Principal Panel</h2>
+
+        <div class="info">
+            Admin can add or update lectures, and instantly check available free rooms and timeslots to prevent scheduling conflicts.
+        </div>
+
+        <div class="admin-box" style="background:#f8fafc;">
+            <h3>🔍 Live Availability Finder (Rooms & Slots)</h3>
+            <div class="filter-row">
+                <div>
+                    <label>Select Date</label>
+                    <input type="date" id="adminCheckDate" onchange="runAdminAvailabilityCheck()">
+                </div>
+                <div>
+                    <label>Check Specific Room (Optional)</label>
+                    <select id="adminCheckRoom" onchange="runAdminAvailabilityCheck()">
+                        <option value="">All Rooms</option>
+                        <option>Room 6</option>
+                        <option>Smart Room</option>
+                        <option>BCA Lab</option>
+                    </select>
+                </div>
+            </div>
+            <div id="adminAvailabilityResult" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="admin-box">
+            <h3>Add / Update Lecture</h3>
+            
+            <input type="hidden" id="editIndex" value="-1">
+
+            <label>Day</label>
+            <select id="aDay">
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+                <option>Saturday</option>
+            </select>
+
+            <label>Class</label>
+            <select id="aClass">
+                <option>BCA-I</option>
+                <option>BCA-II</option>
+                <option>BCA-III (AI)</option>
+                <option>BCA-III (DS)</option>
+            </select>
+
+            <label>Time</label>
+            <select id="aTime"></select>
+
+            <label>Subject</label>
+            <input id="aSubject" placeholder="Example: Java">
+
+            <label>Teacher</label>
+            <input id="aTeacher" placeholder="Example: NPT">
+
+            <label>Room</label>
+            <select id="aRoom">
+                <option>Room 6</option>
+                <option>Smart Room</option>
+                <option>BCA Lab</option>
+            </select>
+
+            <div id="adminAlertContainer"></div>
+
+            <button onclick="saveLecture()">Save Lecture</button>
+            <button class="back" onclick="resetForm()" style="background:#6c757d;">Cancel Edit</button>
+        </div>
+
+        <div class="admin-box">
+            <h3>Teacher Filter & Management</h3>
+            <div class="filter-row">
+                <div>
+                    <label>Filter by Teacher</label>
+                    <select id="filterTeacher" onchange="loadAdminTable()">
+                        <option value="">All Teachers</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Filter by Day</label>
+                    <select id="filterDay" onchange="loadAdminTable()">
+                        <option value="">All Days</option>
+                        <option>Monday</option>
+                        <option>Tuesday</option>
+                        <option>Wednesday</option>
+                        <option>Thursday</option>
+                        <option>Friday</option>
+                        <option>Saturday</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-box">
+            <h3>Current Timetable Master List</h3>
+            <div id="adminData"></div>
+        </div>
+
+        <button class="delete" onclick="resetTimetable()">Reset Original Timetable</button>
+        <button class="back" onclick="goHome()">Logout</button>
+    </div>
+
+</div>
+
+<script src="javascript.js"></script>
+</body>
+</html>
