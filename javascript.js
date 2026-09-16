@@ -135,7 +135,7 @@ function yearChanged() {
 
     const box = document.getElementById("streamBox");
 
-    if (year === "BCA-III") {
+    if (year === "BCA-I" || year === "BCA-III") {
         box.classList.remove("hidden");
     } else {
         box.classList.add("hidden");
@@ -249,19 +249,76 @@ function getStudentClass() {
         document.getElementById("studentYear").value
     );
 
-    if (year === "BCA-III") {
+    if (year === "BCA-I" || year === "BCA-III") {
 
         let stream = clean(
             document.getElementById("studentStream").value
-        );
+        ).toUpperCase();
 
-        if (stream === "AI") return "BCA-III (AI)";
-        if (stream === "DS") return "BCA-III (DS)";
+        if (stream === "AI") return year + " (AI)";
+        if (stream === "DS") return year + " (DS)";
 
-        return stream;
+        return year;
     }
 
     return year;
+}
+
+function getStudentClasses() {
+
+    const year = clean(
+        document.getElementById("studentYear").value
+    );
+
+    if (!year) return [];
+
+    if (year === "BCA-I" || year === "BCA-III") {
+
+        const streamEl = document.getElementById("studentStream");
+        const stream = streamEl
+            ? clean(streamEl.value).toUpperCase()
+            : "";
+
+        if (stream === "AI") {
+            return [
+                year.toLowerCase(),
+                (year + " (AI)").toLowerCase()
+            ];
+        }
+
+        if (stream === "DS") {
+            return [
+                year.toLowerCase(),
+                (year + " (DS)").toLowerCase()
+            ];
+        }
+
+        return [year.toLowerCase()];
+    }
+
+    return [year.toLowerCase()];
+}
+
+function isStudentClassMatch(itemClass, selectedClasses) {
+
+    const value = clean(itemClass)
+        .replace(/\s+/g, " ")
+        .replace(/\(\s*/g, " (")
+        .replace(/\s*\)/g, ")")
+        .trim()
+        .toLowerCase();
+
+    return selectedClasses.some(cls => {
+
+        const target = clean(cls)
+            .replace(/\s+/g, " ")
+            .replace(/\(\s*/g, " (")
+            .replace(/\s*\)/g, ")")
+            .trim()
+            .toLowerCase();
+
+        return value === target;
+    });
 }
 
 function loadStudentTimetableDisplay() {
@@ -271,6 +328,7 @@ function loadStudentTimetableDisplay() {
     );
 
     const cls = getStudentClass();
+    const selectedClasses = getStudentClasses();
 
     if (!name || !cls) {
         alert("Please enter your name and select year/stream.");
@@ -296,7 +354,7 @@ function loadStudentTimetableDisplay() {
 
         const data = timetable.filter(x =>
             clean(x.day).toLowerCase() === day.toLowerCase() &&
-            clean(x.class).toLowerCase() === cls.toLowerCase()
+            isStudentClassMatch(x.class, selectedClasses)
         );
 
         let html =
@@ -323,7 +381,7 @@ function loadStudentTimetableDisplay() {
 
             const dayData = timetable.filter(x =>
                 clean(x.day).toLowerCase() === clean(day).toLowerCase() &&
-                clean(x.class).toLowerCase() === cls.toLowerCase()
+                isStudentClassMatch(x.class, selectedClasses)
             );
 
             html += "<h4>" + day + "</h4>";
@@ -690,36 +748,42 @@ function createDayTable(day, cls, data) {
 
     slotList.forEach(time => {
 
-        const lecture = data.find(x =>
+        const lectures = data.filter(x =>
             clean(x.time) === clean(time)
         );
 
-        if (lecture) {
+        if (lectures.length > 0) {
 
-            const isLab =
-                clean(lecture.subject)
-                    .toUpperCase()
-                    .includes("LAB");
+            lectures.forEach(lecture => {
 
-            html +=
-                "<tr>" +
-                "<td>" + time + "</td>" +
-                "<td>" +
-                "<div class='lecture " +
-                (isLab ? "lab" : "") +
-                "'>" +
-                "<b>" +
-                lecture.subject +
-                "</b>" +
-                "</div>" +
-                "</td>" +
-                "<td>" +
-                (lecture.teacher || "-") +
-                "</td>" +
-                "<td>" +
-                lecture.room +
-                "</td>" +
-                "</tr>";
+                const isLab =
+                    clean(lecture.subject)
+                        .toUpperCase()
+                        .includes("LAB");
+
+                html +=
+                    "<tr>" +
+                    "<td>" + time + "</td>" +
+                    "<td>" +
+                    "<div class='lecture " +
+                    (isLab ? "lab" : "") +
+                    "'>" +
+                    "<b>" +
+                    lecture.subject +
+                    "</b>" +
+                    "<br><small>" +
+                    lecture.class +
+                    "</small>" +
+                    "</div>" +
+                    "</td>" +
+                    "<td>" +
+                    (lecture.teacher || "-") +
+                    "</td>" +
+                    "<td>" +
+                    lecture.room +
+                    "</td>" +
+                    "</tr>";
+            });
 
         } else {
 
