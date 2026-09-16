@@ -11,432 +11,599 @@ let studentViewMode = "daily";
 let teacherViewMode = "daily";
 
 function clean(value) {
-    return String(value == null ? "" : value).trim();
+return String(value == null ? "" : value).trim();
 }
 
 async function loadDatabase() {
-    try {
-        const response = await fetch(API_URL + "?action=get&t=" + Date.now());
+try {
+const response = await fetch(API_URL + "?action=get&t=" + Date.now());
 
-        if (!response.ok) {
-            throw new Error("API connection failed");
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || "Failed to load data");
-        }
-
-        db = data;
-
-        times = (data.meta.times || []).map(clean);
-        saturdayTimes = (data.meta.saturdayTimes || []).map(clean);
-        days = (data.meta.days || []).map(clean);
-        allRooms = (data.meta.allRooms || []).map(clean);
-
-        timetable = (data.timetable || []).map(item => ({
-            id: clean(item.id),
-            day: clean(item.day),
-            class: clean(item.class),
-            time: clean(item.time),
-            subject: clean(item.subject),
-            teacher: clean(item.teacher),
-            room: clean(item.room)
-        }));
-
-        originalTimetable = JSON.parse(JSON.stringify(timetable));
-
-        console.log("GOOGLE SHEET DATA:", timetable);
-        console.log("TOTAL LECTURES:", timetable.length);
-
-        goHome();
-
-    } catch (error) {
-        console.error("Google Sheet Error:", error);
-        alert("Failed to load timetable from Google Sheet: " + error.message);
+    if (!response.ok) {
+        throw new Error("API connection failed");
     }
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.message || "Failed to load data");
+    }
+
+    db = data;
+
+    times = (data.meta.times || []).map(clean);
+    saturdayTimes = (data.meta.saturdayTimes || []).map(clean);
+    days = (data.meta.days || []).map(clean);
+    allRooms = (data.meta.allRooms || []).map(clean);
+
+    timetable = (data.timetable || []).map(item => ({
+        id: clean(item.id),
+        day: clean(item.day),
+        class: clean(item.class),
+        time: clean(item.time),
+        subject: clean(item.subject),
+        teacher: clean(item.teacher),
+        room: clean(item.room)
+    }));
+
+    originalTimetable = JSON.parse(JSON.stringify(timetable));
+
+    console.log("GOOGLE SHEET DATA:", timetable);
+    console.log("TOTAL LECTURES:", timetable.length);
+
+    goHome();
+
+} catch (error) {
+    console.error("Google Sheet Error:", error);
+    alert("Failed to load timetable from Google Sheet: " + error.message);
+}
+
 }
 
 async function sendToAPI(data) {
 
-    const response = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(data)
-    });
+const response = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+});
 
-    const text = await response.text();
+const text = await response.text();
 
-    let result;
+let result;
 
-    try {
-        result = JSON.parse(text);
-    } catch (e) {
-        throw new Error("Invalid response from Google Sheet API");
-    }
+try {
+    result = JSON.parse(text);
+} catch (e) {
+    throw new Error("Invalid response from Google Sheet API");
+}
 
-    if (!result.success) {
-        throw new Error(result.message || "API request failed");
-    }
+if (!result.success) {
+    throw new Error(result.message || "API request failed");
+}
 
-    return result;
+return result;
+
 }
 
 function hideAll() {
-    document.querySelectorAll(".card").forEach(x => {
-        x.classList.add("hidden");
-    });
+document.querySelectorAll(".card").forEach(x => {
+x.classList.add("hidden");
+});
 }
 
 function goHome() {
-    hideAll();
+hideAll();
 
-    const home = document.getElementById("home");
+const home = document.getElementById("home");
 
-    if (home) {
-        home.classList.remove("hidden");
-    }
+if (home) {
+    home.classList.remove("hidden");
+}
+
 }
 
 function showStudent() {
-    hideAll();
+hideAll();
 
-    document.getElementById("student").classList.remove("hidden");
+document.getElementById("student").classList.remove("hidden");
 
-    setToday("studentDate");
+setToday("studentDate");
 
-    setStudentView("daily");
+setStudentView("daily");
+
 }
 
 function showTeacher() {
-    hideAll();
+hideAll();
 
-    document.getElementById("teacher").classList.remove("hidden");
+document.getElementById("teacher").classList.remove("hidden");
 
-    loadTeachersDropdown();
+loadTeachersDropdown();
 
-    setToday("teacherDate");
-    setToday("teacherCheckDate");
+setToday("teacherDate");
+setToday("teacherCheckDate");
 
-    setTeacherView("daily");
+setTeacherView("daily");
+
 }
 
 function showAdmin() {
-    hideAll();
+hideAll();
 
-    document.getElementById("adminLogin").classList.remove("hidden");
+document.getElementById("adminLogin").classList.remove("hidden");
+
 }
 
 function yearChanged() {
 
-    const year = clean(
-        document.getElementById("studentYear").value
-    );
+const year = clean(
+    document.getElementById("studentYear").value
+);
 
-    const box = document.getElementById("streamBox");
+const box = document.getElementById("streamBox");
 
-    if (year === "BCA-I" || year === "BCA-III") {
-        box.classList.remove("hidden");
-    } else {
-        box.classList.add("hidden");
-    }
+if (
+    year === "BCA-I" ||
+    year === "BCA-II" ||
+    year === "BCA-III"
+) {
+    box.classList.remove("hidden");
+} else {
+    box.classList.add("hidden");
+}
+
 }
 
 function setStudentView(mode) {
 
-    studentViewMode = mode;
+studentViewMode = mode;
 
-    if (mode === "daily") {
+if (mode === "daily") {
 
-        document.getElementById("studentBtnDaily").classList.add("active");
-        document.getElementById("studentBtnWeekly").classList.remove("active");
+    document.getElementById("studentBtnDaily").classList.add("active");
+    document.getElementById("studentBtnWeekly").classList.remove("active");
 
-        document.getElementById("studentDateBox").classList.remove("hidden");
+    document.getElementById("studentDateBox").classList.remove("hidden");
 
-    } else {
+} else {
 
-        document.getElementById("studentBtnWeekly").classList.add("active");
-        document.getElementById("studentBtnDaily").classList.remove("active");
+    document.getElementById("studentBtnWeekly").classList.add("active");
+    document.getElementById("studentBtnDaily").classList.remove("active");
 
-        document.getElementById("studentDateBox").classList.add("hidden");
-    }
+    document.getElementById("studentDateBox").classList.add("hidden");
+}
+
 }
 
 function setTeacherView(mode) {
 
-    teacherViewMode = mode;
+teacherViewMode = mode;
 
-    document.getElementById("teacherBtnDaily").classList.remove("active");
-    document.getElementById("teacherBtnWeekly").classList.remove("active");
-    document.getElementById("teacherBtnAvailability").classList.remove("active");
+document.getElementById("teacherBtnDaily").classList.remove("active");
+document.getElementById("teacherBtnWeekly").classList.remove("active");
+document.getElementById("teacherBtnAvailability").classList.remove("active");
 
-    if (mode === "daily") {
+if (mode === "daily") {
 
-        document.getElementById("teacherBtnDaily").classList.add("active");
+    document.getElementById("teacherBtnDaily").classList.add("active");
 
-        document.getElementById("teacherDateBox").classList.remove("hidden");
-        document.getElementById("teacherAvailabilityBox").classList.add("hidden");
+    document.getElementById("teacherDateBox").classList.remove("hidden");
+    document.getElementById("teacherAvailabilityBox").classList.add("hidden");
 
-        document.getElementById("teacherActionBtn").style.display = "inline-block";
-        document.getElementById("teacherActionBtn").innerText = "Show Timetable";
+    document.getElementById("teacherActionBtn").style.display = "inline-block";
+    document.getElementById("teacherActionBtn").innerText = "Show Timetable";
 
-    } else if (mode === "weekly") {
+} else if (mode === "weekly") {
 
-        document.getElementById("teacherBtnWeekly").classList.add("active");
+    document.getElementById("teacherBtnWeekly").classList.add("active");
 
-        document.getElementById("teacherDateBox").classList.add("hidden");
-        document.getElementById("teacherAvailabilityBox").classList.add("hidden");
+    document.getElementById("teacherDateBox").classList.add("hidden");
+    document.getElementById("teacherAvailabilityBox").classList.add("hidden");
 
-        document.getElementById("teacherActionBtn").style.display = "inline-block";
-        document.getElementById("teacherActionBtn").innerText = "Show Timetable";
+    document.getElementById("teacherActionBtn").style.display = "inline-block";
+    document.getElementById("teacherActionBtn").innerText = "Show Timetable";
 
-    } else {
+} else {
 
-        document.getElementById("teacherBtnAvailability").classList.add("active");
+    document.getElementById("teacherBtnAvailability").classList.add("active");
 
-        document.getElementById("teacherDateBox").classList.add("hidden");
-        document.getElementById("teacherAvailabilityBox").classList.remove("hidden");
+    document.getElementById("teacherDateBox").classList.add("hidden");
+    document.getElementById("teacherAvailabilityBox").classList.remove("hidden");
 
-        document.getElementById("teacherActionBtn").style.display = "none";
+    document.getElementById("teacherActionBtn").style.display = "none";
 
-        checkTeacherAvailability();
-    }
+    checkTeacherAvailability();
+}
+
 }
 
 function loadTeachersDropdown() {
 
-    const teachers = [
-        ...new Set(
-            timetable
-                .map(x => clean(x.teacher))
-                .filter(x => x !== "")
-        )
-    ];
+const teachers = [
+    ...new Set(
+        timetable
+            .map(x => clean(x.teacher))
+            .filter(x => x !== "")
+    )
+];
 
-    const select = document.getElementById("teacherSelect");
+const select = document.getElementById("teacherSelect");
 
-    if (select) {
+if (select) {
 
-        select.innerHTML = "<option value=''>Select Teacher</option>";
+    select.innerHTML = "<option value=''>Select Teacher</option>";
 
-        teachers.forEach(t => {
-            select.innerHTML +=
-                "<option value=\"" + t + "\">" + t + "</option>";
-        });
-    }
+    teachers.forEach(t => {
+        select.innerHTML +=
+            "<option value=\"" + t + "\">" + t + "</option>";
+    });
+}
 
-    const filterSelect = document.getElementById("filterTeacher");
+const filterSelect = document.getElementById("filterTeacher");
 
-    if (filterSelect) {
+if (filterSelect) {
 
-        const oldValue = filterSelect.value;
+    const oldValue = filterSelect.value;
 
-        filterSelect.innerHTML =
-            "<option value=''>All Teachers</option>";
+    filterSelect.innerHTML =
+        "<option value=''>All Teachers</option>";
 
-        teachers.forEach(t => {
-            filterSelect.innerHTML +=
-                "<option value=\"" + t + "\">" + t + "</option>";
-        });
+    teachers.forEach(t => {
+        filterSelect.innerHTML +=
+            "<option value=\"" + t + "\">" + t + "</option>";
+    });
 
-        filterSelect.value = oldValue;
-    }
+    filterSelect.value = oldValue;
+}
+
 }
 
 function getStudentClass() {
 
-    const year = clean(
-        document.getElementById("studentYear").value
-    );
+const year = clean(
+    document.getElementById("studentYear").value
+);
 
-    if (year === "BCA-I" || year === "BCA-III") {
+if (
+    year === "BCA-I" ||
+    year === "BCA-II" ||
+    year === "BCA-III"
+) {
 
-        let stream = clean(
-            document.getElementById("studentStream").value
-        ).toUpperCase();
+    const streamElement =
+        document.getElementById("studentStream");
 
-        if (stream === "AI") return year + " (AI)";
-        if (stream === "DS") return year + " (DS)";
+    const stream = streamElement
+        ? clean(streamElement.value).toUpperCase()
+        : "";
 
-        return year;
-    }
+    if (stream === "AI") return year + " (AI)";
+    if (stream === "DS") return year + " (DS)";
 
     return year;
 }
 
-function getStudentClasses() {
+return year;
 
-    const year = clean(
-        document.getElementById("studentYear").value
-    );
-
-    if (!year) return [];
-
-    if (year === "BCA-I" || year === "BCA-III") {
-
-        const streamEl = document.getElementById("studentStream");
-        const stream = streamEl
-            ? clean(streamEl.value).toUpperCase()
-            : "";
-
-        if (stream === "AI") {
-            return [
-                year.toLowerCase(),
-                (year + " (AI)").toLowerCase()
-            ];
-        }
-
-        if (stream === "DS") {
-            return [
-                year.toLowerCase(),
-                (year + " (DS)").toLowerCase()
-            ];
-        }
-
-        return [year.toLowerCase()];
-    }
-
-    return [year.toLowerCase()];
 }
 
-function isStudentClassMatch(itemClass, selectedClasses) {
+function normalizeStudentClass(value) {
 
-    const value = clean(itemClass)
-        .replace(/\s+/g, " ")
-        .replace(/\(\s*/g, " (")
-        .replace(/\s*\)/g, ")")
-        .trim()
-        .toLowerCase();
+return clean(value)
+    .replace(/\s+/g, " ")
+    .replace(/\(\s*/g, " (")
+    .replace(/\s*\)/g, ")")
+    .trim()
+    .toLowerCase();
 
-    return selectedClasses.some(cls => {
+}
 
-        const target = clean(cls)
-            .replace(/\s+/g, " ")
-            .replace(/\(\s*/g, " (")
-            .replace(/\s*\)/g, ")")
-            .trim()
-            .toLowerCase();
+function getStudentClasses() {
 
-        return value === target;
-    });
+const year = clean(
+    document.getElementById("studentYear").value
+);
+
+if (!year) return [];
+
+const classes = [year];
+
+if (
+    year === "BCA-I" ||
+    year === "BCA-II" ||
+    year === "BCA-III"
+) {
+
+    const streamElement =
+        document.getElementById("studentStream");
+
+    const stream = streamElement
+        ? clean(streamElement.value).toUpperCase()
+        : "";
+
+    if (stream === "AI") {
+
+        classes.push(
+            year + " (AI)"
+        );
+
+    } else if (stream === "DS") {
+
+        classes.push(
+            year + " (DS)"
+        );
+    }
+}
+
+return classes.map(normalizeStudentClass);
+
+}
+
+function isStudentClassMatch(
+itemClass,
+selectedClasses
+) {
+
+const value =
+    normalizeStudentClass(itemClass);
+
+return selectedClasses.some(cls =>
+    value === normalizeStudentClass(cls)
+);
+
 }
 
 function loadStudentTimetableDisplay() {
 
-    const name = clean(
-        document.getElementById("studentName").value
+const name = clean(
+    document.getElementById("studentName").value
+);
+
+const cls = getStudentClass();
+
+const selectedClasses =
+    getStudentClasses();
+
+if (
+    !name ||
+    !cls ||
+    selectedClasses.length === 0
+) {
+
+    alert(
+        "Please enter your name and select year/stream."
     );
 
-    const cls = getStudentClass();
-    const selectedClasses = getStudentClasses();
+    return;
+}
 
-    if (!name || !cls) {
-        alert("Please enter your name and select year/stream.");
+if (studentViewMode === "daily") {
+
+    const date =
+        document.getElementById("studentDate").value;
+
+    if (!date) {
+
+        alert("Please select a date.");
+
         return;
     }
 
-    if (studentViewMode === "daily") {
-
-        const date =
-            document.getElementById("studentDate").value;
-
-        if (!date) {
-            alert("Please select a date.");
-            return;
+    const day = new Date(
+        date + "T00:00:00"
+    ).toLocaleDateString(
+        "en-US",
+        {
+            weekday: "long"
         }
+    );
 
-        const day = new Date(
-            date + "T00:00:00"
-        ).toLocaleDateString(
-            "en-US",
-            { weekday: "long" }
+    const data =
+        timetable.filter(x =>
+            clean(x.day).toLowerCase() ===
+            day.toLowerCase() &&
+            isStudentClassMatch(
+                x.class,
+                selectedClasses
+            )
         );
 
-        const data = timetable.filter(x =>
-            clean(x.day).toLowerCase() === day.toLowerCase() &&
-            isStudentClassMatch(x.class, selectedClasses)
-        );
+    let html =
+        "<div class='info'>" +
+        "<b>Student:</b> " +
+        name +
+        "<br>" +
+        "<b>Class:</b> " +
+        cls +
+        "<br>" +
+        "<b>Date:</b> " +
+        date +
+        " (" +
+        day +
+        ")" +
+        "</div>";
 
-        let html =
-            "<div class='info'>" +
-            "<b>Student:</b> " + name + "<br>" +
-            "<b>Class:</b> " + cls + "<br>" +
-            "<b>Date:</b> " + date + " (" + day + ")" +
-            "</div>";
+    html += createDayTable(
+        day,
+        cls,
+        data
+    );
 
-        html += createDayTable(day, cls, data);
+    document.getElementById(
+        "studentResult"
+    ).innerHTML = html;
 
-        document.getElementById("studentResult").innerHTML = html;
+} else {
 
-    } else {
+    let html =
+        "<div class='info'>" +
+        "<b>Student:</b> " +
+        name +
+        "<br>" +
+        "<b>Class:</b> " +
+        cls +
+        "</div>" +
+        "<h3>Weekly Time Table</h3>";
 
-        let html =
-            "<div class='info'>" +
-            "<b>Student:</b> " + name + "<br>" +
-            "<b>Class:</b> " + cls +
-            "</div>" +
-            "<h3>Weekly Time Table</h3>";
+    days.forEach(day => {
 
-        days.forEach(day => {
-
-            const dayData = timetable.filter(x =>
-                clean(x.day).toLowerCase() === clean(day).toLowerCase() &&
-                isStudentClassMatch(x.class, selectedClasses)
+        const dayData =
+            timetable.filter(x =>
+                clean(x.day).toLowerCase() ===
+                clean(day).toLowerCase() &&
+                isStudentClassMatch(
+                    x.class,
+                    selectedClasses
+                )
             );
 
-            html += "<h4>" + day + "</h4>";
-            html += createDayTable(day, cls, dayData);
-        });
+        html +=
+            "<h4>" +
+            day +
+            "</h4>";
 
-        document.getElementById("studentResult").innerHTML = html;
-    }
+        html += createDayTable(
+            day,
+            cls,
+            dayData
+        );
+    });
+
+    document.getElementById(
+        "studentResult"
+    ).innerHTML = html;
+}
+
 }
 
 function loadTeacherTimetableDisplay() {
 
-    const teacher = clean(
-        document.getElementById("teacherSelect").value
-    );
+const teacher = clean(
+    document.getElementById("teacherSelect").value
+);
 
-    if (!teacher) {
-        alert("Please select a teacher.");
+if (!teacher) {
+
+    alert("Please select a teacher.");
+
+    return;
+}
+
+if (teacherViewMode === "daily") {
+
+    const date =
+        document.getElementById("teacherDate").value;
+
+    if (!date) {
+
+        alert("Please select a date.");
+
         return;
     }
 
-    if (teacherViewMode === "daily") {
-
-        const date =
-            document.getElementById("teacherDate").value;
-
-        if (!date) {
-            alert("Please select a date.");
-            return;
+    const day = new Date(
+        date + "T00:00:00"
+    ).toLocaleDateString(
+        "en-US",
+        {
+            weekday: "long"
         }
+    );
 
-        const day = new Date(
-            date + "T00:00:00"
-        ).toLocaleDateString(
-            "en-US",
-            { weekday: "long" }
+    const data =
+        timetable.filter(x =>
+            clean(x.day).toLowerCase() ===
+            day.toLowerCase() &&
+            clean(x.teacher).toLowerCase() ===
+            teacher.toLowerCase()
         );
 
-        const data = timetable.filter(x =>
-            clean(x.day).toLowerCase() === day.toLowerCase() &&
-            clean(x.teacher).toLowerCase() === teacher.toLowerCase()
-        );
+    let html =
+        "<div class='info'>" +
+        "<b>Teacher:</b> " +
+        teacher +
+        "<br>" +
+        "<b>Date:</b> " +
+        date +
+        " (" +
+        day +
+        ")" +
+        "</div>";
 
-        let html =
-            "<div class='info'>" +
-            "<b>Teacher:</b> " + teacher + "<br>" +
-            "<b>Date:</b> " + date + " (" + day + ")" +
-            "</div>";
+    if (data.length === 0) {
 
-        if (data.length === 0) {
+        html +=
+            "<h3>No lectures scheduled for this day.</h3>";
+
+    } else {
+
+        html +=
+            "<div class='table-scroll'>" +
+            "<table>" +
+            "<tr>" +
+            "<th>Time</th>" +
+            "<th>Class</th>" +
+            "<th>Subject</th>" +
+            "<th>Room</th>" +
+            "</tr>";
+
+        data.forEach(x => {
 
             html +=
-                "<h3>No lectures scheduled for this day.</h3>";
+                "<tr>" +
+                "<td>" +
+                x.time +
+                "</td>" +
+                "<td>" +
+                x.class +
+                "</td>" +
+                "<td>" +
+                x.subject +
+                "</td>" +
+                "<td>" +
+                x.room +
+                "</td>" +
+                "</tr>";
+        });
 
-        } else {
+        html +=
+            "</table></div>";
+    }
+
+    document.getElementById(
+        "teacherResult"
+    ).innerHTML = html;
+
+} else if (
+    teacherViewMode === "weekly"
+) {
+
+    let html =
+        "<div class='info'>" +
+        "<b>Teacher:</b> " +
+        teacher +
+        "</div>" +
+        "<h3>Weekly Teaching Schedule</h3>";
+
+    let found = false;
+
+    days.forEach(day => {
+
+        const dayData =
+            timetable.filter(x =>
+                clean(x.day).toLowerCase() ===
+                clean(day).toLowerCase() &&
+                clean(x.teacher).toLowerCase() ===
+                teacher.toLowerCase()
+            );
+
+        if (dayData.length > 0) {
+
+            found = true;
+
+            html +=
+                "<h4>" +
+                day +
+                "</h4>";
 
             html +=
                 "<div class='table-scroll'>" +
@@ -448,524 +615,620 @@ function loadTeacherTimetableDisplay() {
                 "<th>Room</th>" +
                 "</tr>";
 
-            data.forEach(x => {
+            dayData.forEach(x => {
 
                 html +=
                     "<tr>" +
-                    "<td>" + x.time + "</td>" +
-                    "<td>" + x.class + "</td>" +
-                    "<td>" + x.subject + "</td>" +
-                    "<td>" + x.room + "</td>" +
+                    "<td>" +
+                    x.time +
+                    "</td>" +
+                    "<td>" +
+                    x.class +
+                    "</td>" +
+                    "<td>" +
+                    x.subject +
+                    "</td>" +
+                    "<td>" +
+                    x.room +
+                    "</td>" +
                     "</tr>";
             });
 
-            html += "</table></div>";
+            html +=
+                "</table></div>";
         }
+    });
 
-        document.getElementById("teacherResult").innerHTML = html;
+    if (!found) {
 
-    } else if (teacherViewMode === "weekly") {
-
-        let html =
-            "<div class='info'>" +
-            "<b>Teacher:</b> " + teacher +
-            "</div>" +
-            "<h3>Weekly Teaching Schedule</h3>";
-
-        let found = false;
-
-        days.forEach(day => {
-
-            const dayData = timetable.filter(x =>
-                clean(x.day).toLowerCase() === clean(day).toLowerCase() &&
-                clean(x.teacher).toLowerCase() === teacher.toLowerCase()
-            );
-
-            if (dayData.length > 0) {
-
-                found = true;
-
-                html += "<h4>" + day + "</h4>";
-
-                html +=
-                    "<div class='table-scroll'>" +
-                    "<table>" +
-                    "<tr>" +
-                    "<th>Time</th>" +
-                    "<th>Class</th>" +
-                    "<th>Subject</th>" +
-                    "<th>Room</th>" +
-                    "</tr>";
-
-                dayData.forEach(x => {
-
-                    html +=
-                        "<tr>" +
-                        "<td>" + x.time + "</td>" +
-                        "<td>" + x.class + "</td>" +
-                        "<td>" + x.subject + "</td>" +
-                        "<td>" + x.room + "</td>" +
-                        "</tr>";
-                });
-
-                html += "</table></div>";
-            }
-        });
-
-        if (!found) {
-            html += "<h3>No lectures found.</h3>";
-        }
-
-        document.getElementById("teacherResult").innerHTML = html;
+        html +=
+            "<h3>No lectures found.</h3>";
     }
+
+    document.getElementById(
+        "teacherResult"
+    ).innerHTML = html;
+}
+
 }
 
 function checkTeacherAvailability() {
 
-    const date =
-        document.getElementById("teacherCheckDate").value;
+const date =
+    document.getElementById(
+        "teacherCheckDate"
+    ).value;
 
-    if (!date) return;
+if (!date) return;
 
-    const day = new Date(
-        date + "T00:00:00"
-    ).toLocaleDateString(
-        "en-US",
-        { weekday: "long" }
-    );
+const day = new Date(
+    date + "T00:00:00"
+).toLocaleDateString(
+    "en-US",
+    {
+        weekday: "long"
+    }
+);
 
-    const slotList =
-        day === "Saturday"
-            ? saturdayTimes
-            : times;
+const slotList =
+    day === "Saturday"
+        ? saturdayTimes
+        : times;
 
-    let html =
-        "<h4>Availability for " +
-        date +
-        " (" +
-        day +
-        ")</h4>";
+let html =
+    "<h4>Availability for " +
+    date +
+    " (" +
+    day +
+    ")</h4>";
 
-    html +=
-        "<div class='table-scroll'>" +
-        "<table>" +
-        "<tr>" +
-        "<th>Time Slot</th>" +
-        "<th>Room Status</th>" +
-        "</tr>";
+html +=
+    "<div class='table-scroll'>" +
+    "<table>" +
+    "<tr>" +
+    "<th>Time Slot</th>" +
+    "<th>Room Status</th>" +
+    "</tr>";
 
-    slotList.forEach(time => {
+slotList.forEach(time => {
 
-        const bookedEntries = timetable.filter(x =>
-            clean(x.day).toLowerCase() === day.toLowerCase() &&
-            clean(x.time) === clean(time)
+    const bookedEntries =
+        timetable.filter(x =>
+            clean(x.day).toLowerCase() ===
+            day.toLowerCase() &&
+            clean(x.time) ===
+            clean(time)
         );
 
-        const occupiedRooms =
-            bookedEntries.map(x => clean(x.room));
+    const occupiedRooms =
+        bookedEntries.map(
+            x => clean(x.room)
+        );
 
-        const freeRooms =
-            allRooms.filter(r =>
-                !occupiedRooms.includes(clean(r))
-            );
+    const freeRooms =
+        allRooms.filter(r =>
+            !occupiedRooms.includes(
+                clean(r)
+            )
+        );
+
+    html +=
+        "<tr>" +
+        "<td><b>" +
+        time +
+        "</b></td>" +
+        "<td style='text-align:left;'>";
+
+    if (freeRooms.length > 0) {
 
         html +=
-            "<tr>" +
-            "<td><b>" + time + "</b></td>" +
-            "<td style='text-align:left;'>";
+            "<span class='available-badge'>" +
+            "🟢 Available Rooms: " +
+            freeRooms.join(", ") +
+            "</span><br>";
 
-        if (freeRooms.length > 0) {
+    } else {
 
-            html +=
-                "<span class='available-badge'>" +
-                "🟢 Available Rooms: " +
-                freeRooms.join(", ") +
-                "</span><br>";
+        html +=
+            "<span class='occupied-badge'>" +
+            "🔴 All Rooms Occupied" +
+            "</span><br>";
+    }
 
-        } else {
+    if (bookedEntries.length > 0) {
 
-            html +=
-                "<span class='occupied-badge'>" +
-                "🔴 All Rooms Occupied" +
-                "</span><br>";
-        }
+        html +=
+            "<small style='color:#555;display:inline-block;margin-top:4px;'>Booked: ";
 
-        if (bookedEntries.length > 0) {
+        bookedEntries.forEach(b => {
 
             html +=
-                "<small style='color:#555;display:inline-block;margin-top:4px;'>Booked: ";
+                "[" +
+                b.room +
+                " → " +
+                b.class +
+                " (" +
+                b.subject +
+                ")] ";
+        });
 
-            bookedEntries.forEach(b => {
+        html +=
+            "</small>";
+    }
 
-                html +=
-                    "[" +
-                    b.room +
-                    " → " +
-                    b.class +
-                    " (" +
-                    b.subject +
-                    ")] ";
-            });
+    html +=
+        "</td></tr>";
+});
 
-            html += "</small>";
-        }
+html +=
+    "</table></div>";
 
-        html += "</td></tr>";
-    });
+document.getElementById(
+    "teacherResult"
+).innerHTML = html;
 
-    html += "</table></div>";
-
-    document.getElementById("teacherResult").innerHTML = html;
 }
 
 function runAdminAvailabilityCheck() {
 
-    const date =
-        document.getElementById("adminCheckDate").value;
+const date =
+    document.getElementById(
+        "adminCheckDate"
+    ).value;
 
-    const specificRoom =
-        document.getElementById("adminCheckRoom").value;
+const specificRoom =
+    document.getElementById(
+        "adminCheckRoom"
+    ).value;
 
-    const container =
-        document.getElementById("adminAvailabilityResult");
-
-    if (!date) {
-        container.innerHTML =
-            "<p style='color:#666;'>Please select a date above to scan available slots.</p>";
-        return;
-    }
-
-    const day = new Date(
-        date + "T00:00:00"
-    ).toLocaleDateString(
-        "en-US",
-        { weekday: "long" }
+const container =
+    document.getElementById(
+        "adminAvailabilityResult"
     );
 
-    const slotList =
-        day === "Saturday"
-            ? saturdayTimes
-            : times;
+if (!date) {
 
-    const roomsToCheck =
-        specificRoom
-            ? [specificRoom]
-            : allRooms;
+    container.innerHTML =
+        "<p style='color:#666;'>Please select a date above to scan available slots.</p>";
 
-    let html =
-        "<h4>Open Slots for " +
-        date +
-        " (" +
-        day +
-        ") " +
-        (specificRoom ? "in " + specificRoom : "") +
-        "</h4>";
-
-    html +=
-        "<div class='table-scroll'>" +
-        "<table>" +
-        "<tr>" +
-        "<th>Time Slot</th>" +
-        "<th>Available Rooms</th>" +
-        "<th>Current Occupants</th>" +
-        "</tr>";
-
-    slotList.forEach(time => {
-
-        const booked = timetable.filter(x =>
-            clean(x.day).toLowerCase() === day.toLowerCase() &&
-            clean(x.time) === clean(time)
-        );
-
-        const occupiedRooms =
-            booked.map(x => clean(x.room));
-
-        const freeRooms =
-            roomsToCheck.filter(r =>
-                !occupiedRooms.includes(clean(r))
-            );
-
-        html +=
-            "<tr>" +
-            "<td><b>" + time + "</b></td>" +
-            "<td>";
-
-        if (freeRooms.length > 0) {
-            html +=
-                "<span class='available-badge'>" +
-                freeRooms.join(", ") +
-                "</span>";
-        } else {
-            html +=
-                "<span class='occupied-badge'>None</span>";
-        }
-
-        html +=
-            "</td>" +
-            "<td style='text-align:left;'><small>";
-
-        if (booked.length > 0) {
-
-            booked.forEach(b => {
-                html +=
-                    "<b>" +
-                    b.room +
-                    "</b>: " +
-                    b.class +
-                    " (" +
-                    b.subject +
-                    ")<br>";
-            });
-
-        } else {
-            html += "All rooms free";
-        }
-
-        html += "</small></td></tr>";
-    });
-
-    html += "</table></div>";
-
-    container.innerHTML = html;
+    return;
 }
 
-function createDayTable(day, cls, data) {
+const day = new Date(
+    date + "T00:00:00"
+).toLocaleDateString(
+    "en-US",
+    {
+        weekday: "long"
+    }
+);
 
-    const slotList =
-        clean(day) === "Saturday"
-            ? saturdayTimes
-            : times;
+const slotList =
+    day === "Saturday"
+        ? saturdayTimes
+        : times;
 
-    let html =
-        "<div class='table-scroll'>" +
-        "<table>" +
-        "<tr>" +
-        "<th>Time</th>" +
-        "<th>Subject</th>" +
-        "<th>Teacher</th>" +
-        "<th>Room</th>" +
-        "</tr>";
+const roomsToCheck =
+    specificRoom
+        ? [specificRoom]
+        : allRooms;
 
-    slotList.forEach(time => {
+let html =
+    "<h4>Open Slots for " +
+    date +
+    " (" +
+    day +
+    ") " +
+    (
+        specificRoom
+            ? "in " +
+              specificRoom
+            : ""
+    ) +
+    "</h4>";
 
-        const lectures = data.filter(x =>
-            clean(x.time) === clean(time)
+html +=
+    "<div class='table-scroll'>" +
+    "<table>" +
+    "<tr>" +
+    "<th>Time Slot</th>" +
+    "<th>Available Rooms</th>" +
+    "<th>Current Occupants</th>" +
+    "</tr>";
+
+slotList.forEach(time => {
+
+    const booked =
+        timetable.filter(x =>
+            clean(x.day).toLowerCase() ===
+            day.toLowerCase() &&
+            clean(x.time) ===
+            clean(time)
         );
 
-        if (lectures.length > 0) {
+    const occupiedRooms =
+        booked.map(
+            x => clean(x.room)
+        );
 
-            lectures.forEach(lecture => {
+    const freeRooms =
+        roomsToCheck.filter(r =>
+            !occupiedRooms.includes(
+                clean(r)
+            )
+        );
+
+    html +=
+        "<tr>" +
+        "<td><b>" +
+        time +
+        "</b></td>" +
+        "<td>";
+
+    if (freeRooms.length > 0) {
+
+        html +=
+            "<span class='available-badge'>" +
+            freeRooms.join(", ") +
+            "</span>";
+
+    } else {
+
+        html +=
+            "<span class='occupied-badge'>None</span>";
+    }
+
+    html +=
+        "</td>" +
+        "<td style='text-align:left;'><small>";
+
+    if (booked.length > 0) {
+
+        booked.forEach(b => {
+
+            html +=
+                "<b>" +
+                b.room +
+                "</b>: " +
+                b.class +
+                " (" +
+                b.subject +
+                ")<br>";
+        });
+
+    } else {
+
+        html +=
+            "All rooms free";
+    }
+
+    html +=
+        "</small></td></tr>";
+});
+
+html +=
+    "</table></div>";
+
+container.innerHTML = html;
+
+}
+
+function createDayTable(
+day,
+cls,
+data
+) {
+
+const slotList =
+    clean(day) === "Saturday"
+        ? saturdayTimes
+        : times;
+
+let html =
+    "<div class='table-scroll'>" +
+    "<table>" +
+    "<tr>" +
+    "<th>Time</th>" +
+    "<th>Subject</th>" +
+    "<th>Teacher</th>" +
+    "<th>Room</th>" +
+    "</tr>";
+
+slotList.forEach(time => {
+
+    const lectures =
+        data.filter(x =>
+            clean(x.time) ===
+            clean(time)
+        );
+
+    if (lectures.length > 0) {
+
+        lectures.forEach(
+            lecture => {
 
                 const isLab =
-                    clean(lecture.subject)
+                    clean(
+                        lecture.subject
+                    )
                         .toUpperCase()
                         .includes("LAB");
 
                 html +=
                     "<tr>" +
-                    "<td>" + time + "</td>" +
+                    "<td>" +
+                    time +
+                    "</td>" +
                     "<td>" +
                     "<div class='lecture " +
-                    (isLab ? "lab" : "") +
+                    (
+                        isLab
+                            ? "lab"
+                            : ""
+                    ) +
                     "'>" +
                     "<b>" +
                     lecture.subject +
                     "</b>" +
-                    "<br><small>" +
-                    lecture.class +
-                    "</small>" +
                     "</div>" +
                     "</td>" +
                     "<td>" +
-                    (lecture.teacher || "-") +
+                    (
+                        lecture.teacher ||
+                        "-"
+                    ) +
                     "</td>" +
                     "<td>" +
                     lecture.room +
                     "</td>" +
                     "</tr>";
-            });
+            }
+        );
 
-        } else {
+    } else {
 
-            html +=
-                "<tr>" +
-                "<td>" + time + "</td>" +
-                "<td colspan='3' class='free'>Free</td>" +
-                "</tr>";
-        }
-    });
+        html +=
+            "<tr>" +
+            "<td>" +
+            time +
+            "</td>" +
+            "<td colspan='3' class='free'>" +
+            "Free" +
+            "</td>" +
+            "</tr>";
+    }
+});
 
-    html += "</table></div>";
+html +=
+    "</table></div>";
 
-    return html;
+return html;
+
 }
 
 function adminLogin() {
 
-    const id =
-        document.getElementById("adminId").value;
+const id =
+    document.getElementById(
+        "adminId"
+    ).value;
 
-    const password =
-        document.getElementById("adminPassword").value;
+const password =
+    document.getElementById(
+        "adminPassword"
+    ).value;
 
-    if (id === "admin" && password === "1234") {
+if (
+    id === "admin" &&
+    password === "1234"
+) {
 
-        hideAll();
+    hideAll();
 
-        document
-            .getElementById("adminPanel")
-            .classList.remove("hidden");
+    document
+        .getElementById("adminPanel")
+        .classList.remove("hidden");
 
-        setToday("adminCheckDate");
+    setToday(
+        "adminCheckDate"
+    );
 
-        loadAdmin();
+    loadAdmin();
 
-    } else {
+} else {
 
-        document
-            .getElementById("loginMsg")
-            .innerHTML =
-            "❌ Wrong ID or Password";
-    }
+    document
+        .getElementById("loginMsg")
+        .innerHTML =
+        "❌ Wrong ID or Password";
+}
+
 }
 
 function loadTimeOptions() {
 
-    const select =
-        document.getElementById("aTime");
+const select =
+    document.getElementById(
+        "aTime"
+    );
 
-    select.innerHTML = "";
+select.innerHTML = "";
 
-    [...times, ...saturdayTimes]
-        .filter(
-            (x, i, a) =>
-                a.indexOf(x) === i
-        )
-        .forEach(t => {
+[
+    ...times,
+    ...saturdayTimes
+]
+    .filter(
+        (x, i, a) =>
+            a.indexOf(x) === i
+    )
+    .forEach(t => {
 
-            select.innerHTML +=
-                "<option value=\"" +
-                t +
-                "\">" +
-                t +
-                "</option>";
-        });
+        select.innerHTML +=
+            "<option value=\"" +
+            t +
+            "\">" +
+            t +
+            "</option>";
+    });
+
 }
 
 function loadAdmin() {
 
-    loadTimeOptions();
+loadTimeOptions();
 
-    loadTeachersDropdown();
+loadTeachersDropdown();
 
-    loadAdminTable();
+loadAdminTable();
 
-    runAdminAvailabilityCheck();
+runAdminAvailabilityCheck();
+
 }
 
 function loadAdminTable() {
 
-    const box =
-        document.getElementById("adminData");
+const box =
+    document.getElementById(
+        "adminData"
+    );
 
-    const filterTeacher =
-        clean(
-            document
-                .getElementById("filterTeacher")
-                .value
-        );
+const filterTeacher =
+    clean(
+        document
+            .getElementById(
+                "filterTeacher"
+            )
+            .value
+    );
 
-    const filterDay =
-        clean(
-            document
-                .getElementById("filterDay")
-                .value
-        );
+const filterDay =
+    clean(
+        document
+            .getElementById(
+                "filterDay"
+            )
+            .value
+    );
 
-    const filtered = timetable.filter(x => {
+const filtered =
+    timetable.filter(x => {
 
         const matchT =
             filterTeacher
-                ? clean(x.teacher) === filterTeacher
+                ? clean(
+                    x.teacher
+                ) === filterTeacher
                 : true;
 
         const matchD =
             filterDay
-                ? clean(x.day) === filterDay
+                ? clean(
+                    x.day
+                ) === filterDay
                 : true;
 
         return matchT && matchD;
     });
 
-    let html =
-        "<div class='table-scroll'>" +
-        "<table>" +
+let html =
+    "<div class='table-scroll'>" +
+    "<table>" +
+    "<tr>" +
+    "<th>Day</th>" +
+    "<th>Class</th>" +
+    "<th>Time</th>" +
+    "<th>Subject</th>" +
+    "<th>Teacher</th>" +
+    "<th>Room</th>" +
+    "<th>Actions</th>" +
+    "</tr>";
+
+filtered.forEach(x => {
+
+    const masterIndex =
+        timetable.findIndex(
+            item =>
+                item.id ===
+                x.id
+        );
+
+    html +=
         "<tr>" +
-        "<th>Day</th>" +
-        "<th>Class</th>" +
-        "<th>Time</th>" +
-        "<th>Subject</th>" +
-        "<th>Teacher</th>" +
-        "<th>Room</th>" +
-        "<th>Actions</th>" +
+        "<td>" +
+        x.day +
+        "</td>" +
+        "<td>" +
+        x.class +
+        "</td>" +
+        "<td>" +
+        x.time +
+        "</td>" +
+        "<td>" +
+        x.subject +
+        "</td>" +
+        "<td>" +
+        (
+            x.teacher ||
+            "-"
+        ) +
+        "</td>" +
+        "<td>" +
+        x.room +
+        "</td>" +
+        "<td>" +
+        "<button class='edit' onclick='editLecture(" +
+        masterIndex +
+        ")'>Edit</button>" +
+        "<button class='delete' onclick='deleteLecture(" +
+        masterIndex +
+        ")'>Delete</button>" +
+        "</td>" +
         "</tr>";
+});
 
-    filtered.forEach(x => {
+html +=
+    "</table></div>";
 
-        const masterIndex =
-            timetable.findIndex(
-                item => item.id === x.id
-            );
+box.innerHTML = html;
 
-        html +=
-            "<tr>" +
-            "<td>" + x.day + "</td>" +
-            "<td>" + x.class + "</td>" +
-            "<td>" + x.time + "</td>" +
-            "<td>" + x.subject + "</td>" +
-            "<td>" + (x.teacher || "-") + "</td>" +
-            "<td>" + x.room + "</td>" +
-            "<td>" +
-            "<button class='edit' onclick='editLecture(" +
-            masterIndex +
-            ")'>Edit</button>" +
-            "<button class='delete' onclick='deleteLecture(" +
-            masterIndex +
-            ")'>Delete</button>" +
-            "</td>" +
-            "</tr>";
-    });
-
-    html += "</table></div>";
-
-    box.innerHTML = html;
 }
 
 function checkOverlap(
-    day,
-    time,
-    teacher,
-    room,
-    cls,
-    ignoreIndex = -1
+day,
+time,
+teacher,
+room,
+cls,
+ignoreIndex = -1
 ) {
 
-    const conflicts = [];
+const conflicts = [];
 
-    timetable.forEach((item, idx) => {
-
-        if (idx === ignoreIndex) return;
+timetable.forEach(
+    (item, idx) => {
 
         if (
-            clean(item.day) === clean(day) &&
-            clean(item.time) === clean(time)
+            idx ===
+            ignoreIndex
+        ) return;
+
+        if (
+            clean(item.day) ===
+                clean(day) &&
+            clean(item.time) ===
+                clean(time)
         ) {
 
             if (
                 teacher &&
                 item.teacher &&
-                clean(item.teacher).toLowerCase() ===
-                clean(teacher).toLowerCase()
+                clean(
+                    item.teacher
+                ).toLowerCase() ===
+                clean(
+                    teacher
+                ).toLowerCase()
             ) {
 
                 conflicts.push(
@@ -979,7 +1242,10 @@ function checkOverlap(
                 );
             }
 
-            if (clean(item.room) === clean(room)) {
+            if (
+                clean(item.room) ===
+                clean(room)
+            ) {
 
                 conflicts.push(
                     "Room '" +
@@ -992,7 +1258,10 @@ function checkOverlap(
                 );
             }
 
-            if (clean(item.class) === clean(cls)) {
+            if (
+                clean(item.class) ===
+                clean(cls)
+            ) {
 
                 conflicts.push(
                     "Class '" +
@@ -1003,220 +1272,349 @@ function checkOverlap(
                 );
             }
         }
-    });
+    }
+);
 
-    return conflicts;
+return conflicts;
+
 }
 
 async function saveLecture() {
 
-    const day =
-        clean(document.getElementById("aDay").value);
+const day =
+    clean(
+        document
+            .getElementById(
+                "aDay"
+            )
+            .value
+    );
 
-    const cls =
-        clean(document.getElementById("aClass").value);
+const cls =
+    clean(
+        document
+            .getElementById(
+                "aClass"
+            )
+            .value
+    );
 
-    const time =
-        clean(document.getElementById("aTime").value);
+const time =
+    clean(
+        document
+            .getElementById(
+                "aTime"
+            )
+            .value
+    );
 
-    const subject =
-        clean(document.getElementById("aSubject").value);
+const subject =
+    clean(
+        document
+            .getElementById(
+                "aSubject"
+            )
+            .value
+    );
 
-    const teacher =
-        clean(document.getElementById("aTeacher").value);
+const teacher =
+    clean(
+        document
+            .getElementById(
+                "aTeacher"
+            )
+            .value
+    );
 
-    const room =
-        clean(document.getElementById("aRoom").value);
+const room =
+    clean(
+        document
+            .getElementById(
+                "aRoom"
+            )
+            .value
+    );
 
-    const editIndex =
-        parseInt(
-            document.getElementById("editIndex").value
-        );
+const editIndex =
+    parseInt(
+        document
+            .getElementById(
+                "editIndex"
+            )
+            .value
+    );
 
-    const alertContainer =
-        document.getElementById("adminAlertContainer");
+const alertContainer =
+    document.getElementById(
+        "adminAlertContainer"
+    );
 
-    alertContainer.innerHTML = "";
+alertContainer.innerHTML =
+    "";
 
-    if (!subject) {
-        alert("Please enter subject name.");
-        return;
-    }
+if (!subject) {
 
-    const conflicts =
-        checkOverlap(
-            day,
-            time,
-            teacher,
-            room,
-            cls,
-            editIndex
-        );
+    alert(
+        "Please enter subject name."
+    );
 
-    if (conflicts.length > 0) {
+    return;
+}
 
-        let alertHTML =
-            "<div class='alert-box'>" +
-            "<b>⚠️ Lecture Overlap Detected! Action Blocked:</b>" +
-            "<ul>";
+const conflicts =
+    checkOverlap(
+        day,
+        time,
+        teacher,
+        room,
+        cls,
+        editIndex
+    );
 
-        conflicts.forEach(err => {
-            alertHTML += "<li>" + err + "</li>";
-        });
+if (
+    conflicts.length > 0
+) {
 
-        alertHTML += "</ul></div>";
+    let alertHTML =
+        "<div class='alert-box'>" +
+        "<b>⚠️ Lecture Overlap Detected! Action Blocked:</b>" +
+        "<ul>";
 
-        alertContainer.innerHTML = alertHTML;
-
-        return;
-    }
-
-    try {
-
-        const obj = {
-            day: day,
-            class: cls,
-            time: time,
-            subject: subject,
-            teacher: teacher,
-            room: room
-        };
-
-        if (editIndex >= 0) {
-
-            obj.action = "update";
-            obj.id = timetable[editIndex].id;
-
-        } else {
-
-            obj.action = "add";
+    conflicts.forEach(
+        err => {
+            alertHTML +=
+                "<li>" +
+                err +
+                "</li>";
         }
+    );
 
-        await sendToAPI(obj);
+    alertHTML +=
+        "</ul></div>";
 
-        await loadDatabase();
+    alertContainer.innerHTML =
+        alertHTML;
 
-        resetForm();
+    return;
+}
 
-        loadAdmin();
+try {
 
-        alert("Timetable updated successfully.");
+    const obj = {
+        day: day,
+        class: cls,
+        time: time,
+        subject: subject,
+        teacher: teacher,
+        room: room
+    };
 
-    } catch (error) {
+    if (editIndex >= 0) {
 
-        console.error("Save Error:", error);
+        obj.action =
+            "update";
 
-        alert(
-            "Error saving timetable: " +
-            error.message
-        );
+        obj.id =
+            timetable[
+                editIndex
+            ].id;
+
+    } else {
+
+        obj.action =
+            "add";
     }
+
+    await sendToAPI(
+        obj
+    );
+
+    await loadDatabase();
+
+    resetForm();
+
+    loadAdmin();
+
+    alert(
+        "Timetable updated successfully."
+    );
+
+} catch (error) {
+
+    console.error(
+        "Save Error:",
+        error
+    );
+
+    alert(
+        "Error saving timetable: " +
+        error.message
+    );
+}
+
 }
 
 function editLecture(index) {
 
-    const item = timetable[index];
+const item =
+    timetable[index];
 
-    if (!item) return;
+if (!item) return;
 
-    document.getElementById("aDay").value = item.day;
-    document.getElementById("aClass").value = item.class;
-    document.getElementById("aTime").value = item.time;
-    document.getElementById("aSubject").value = item.subject;
-    document.getElementById("aTeacher").value = item.teacher || "";
-    document.getElementById("aRoom").value = item.room;
-    document.getElementById("editIndex").value = index;
+document.getElementById(
+    "aDay"
+).value = item.day;
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+document.getElementById(
+    "aClass"
+).value = item.class;
+
+document.getElementById(
+    "aTime"
+).value = item.time;
+
+document.getElementById(
+    "aSubject"
+).value = item.subject;
+
+document.getElementById(
+    "aTeacher"
+).value =
+    item.teacher || "";
+
+document.getElementById(
+    "aRoom"
+).value = item.room;
+
+document.getElementById(
+    "editIndex"
+).value = index;
+
+window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+});
+
 }
 
 function resetForm() {
 
-    document.getElementById("aSubject").value = "";
-    document.getElementById("aTeacher").value = "";
-    document.getElementById("editIndex").value = "-1";
+document.getElementById(
+    "aSubject"
+).value = "";
 
-    document.getElementById(
-        "adminAlertContainer"
-    ).innerHTML = "";
+document.getElementById(
+    "aTeacher"
+).value = "";
+
+document.getElementById(
+    "editIndex"
+).value = "-1";
+
+document.getElementById(
+    "adminAlertContainer"
+).innerHTML = "";
+
 }
 
-async function deleteLecture(index) {
+async function deleteLecture(
+index
+) {
 
-    if (!confirm("Delete this lecture?")) {
-        return;
-    }
+if (
+    !confirm(
+        "Delete this lecture?"
+    )
+) {
+    return;
+}
 
-    try {
+try {
 
-        const lecture = timetable[index];
+    const lecture =
+        timetable[index];
 
-        if (!lecture || !lecture.id) {
-            throw new Error("Lecture ID not found");
-        }
+    if (
+        !lecture ||
+        !lecture.id
+    ) {
 
-        await sendToAPI({
-            action: "delete",
-            id: lecture.id
-        });
-
-        await loadDatabase();
-
-        loadAdmin();
-
-        alert("Lecture deleted successfully.");
-
-    } catch (error) {
-
-        console.error("Delete Error:", error);
-
-        alert(
-            "Error deleting lecture: " +
-            error.message
+        throw new Error(
+            "Lecture ID not found"
         );
     }
+
+    await sendToAPI({
+        action: "delete",
+        id: lecture.id
+    });
+
+    await loadDatabase();
+
+    loadAdmin();
+
+    alert(
+        "Lecture deleted successfully."
+    );
+
+} catch (error) {
+
+    console.error(
+        "Delete Error:",
+        error
+    );
+
+    alert(
+        "Error deleting lecture: " +
+        error.message
+    );
+}
+
 }
 
 function resetTimetable() {
 
-    alert(
-        "Google Sheet is now the main database. " +
-        "Reset feature is disabled to prevent accidental data loss."
-    );
+alert(
+    "Google Sheet is now the main database. " +
+    "Reset feature is disabled to prevent accidental data loss."
+);
+
 }
 
 function setToday(id) {
 
-    const d = new Date();
+const d = new Date();
 
-    const yyyy = d.getFullYear();
+const yyyy =
+    d.getFullYear();
 
-    const mm =
-        String(d.getMonth() + 1)
-            .padStart(2, "0");
+const mm =
+    String(
+        d.getMonth() + 1
+    ).padStart(2, "0");
 
-    const dd =
-        String(d.getDate())
-            .padStart(2, "0");
+const dd =
+    String(
+        d.getDate()
+    ).padStart(2, "0");
 
-    const el =
-        document.getElementById(id);
+const el =
+    document.getElementById(id);
 
-    if (el) {
+if (el) {
 
-        el.value =
-            yyyy +
-            "-" +
-            mm +
-            "-" +
-            dd;
-    }
+    el.value =
+        yyyy +
+        "-" +
+        mm +
+        "-" +
+        dd;
 }
 
-window.onload = async function () {
+}
+
+window.onload =
+async function () {
 
     await loadDatabase();
 };
