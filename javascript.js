@@ -128,27 +128,17 @@ function showAdmin() {
 }
 
 function yearChanged() {
+
     const year = clean(
         document.getElementById("studentYear").value
     );
 
     const box = document.getElementById("streamBox");
 
-    if (
-        year === "BCA-I" ||
-        year === "BCA-II" ||
-        year === "BCA-III"
-    ) {
+    if (year === "BCA-III") {
         box.classList.remove("hidden");
     } else {
         box.classList.add("hidden");
-
-        const stream =
-            document.getElementById("studentStream");
-
-        if (stream) {
-            stream.value = "";
-        }
     }
 }
 
@@ -254,26 +244,21 @@ function loadTeachersDropdown() {
 }
 
 function getStudentClass() {
+
     const year = clean(
         document.getElementById("studentYear").value
     );
 
-    const stream = clean(
-        document.getElementById("studentStream").value
-    );
+    if (year === "BCA-III") {
 
-    if (
-        year === "BCA-I" ||
-        year === "BCA-II" ||
-        year === "BCA-III"
-    ) {
-        if (stream === "AI") {
-            return year + " (AI)";
-        }
+        let stream = clean(
+            document.getElementById("studentStream").value
+        );
 
-        if (stream === "DS") {
-            return year + " (DS)";
-        }
+        if (stream === "AI") return "BCA-III (AI)";
+        if (stream === "DS") return "BCA-III (DS)";
+
+        return stream;
     }
 
     return year;
@@ -705,39 +690,36 @@ function createDayTable(day, cls, data) {
 
     slotList.forEach(time => {
 
-        const lectures = data.filter(x =>
+        const lecture = data.find(x =>
             clean(x.time) === clean(time)
         );
 
-        if (lectures.length > 0) {
+        if (lecture) {
 
-            lectures.forEach(lecture => {
+            const isLab =
+                clean(lecture.subject)
+                    .toUpperCase()
+                    .includes("LAB");
 
-                const isLab =
-                    clean(lecture.subject)
-                        .toUpperCase()
-                        .includes("LAB");
-
-                html +=
-                    "<tr>" +
-                    "<td>" + time + "</td>" +
-                    "<td>" +
-                    "<div class='lecture " +
-                    (isLab ? "lab" : "") +
-                    "'>" +
-                    "<b>" +
-                    lecture.subject +
-                    "</b>" +
-                    "</div>" +
-                    "</td>" +
-                    "<td>" +
-                    (lecture.teacher || "-") +
-                    "</td>" +
-                    "<td>" +
-                    lecture.room +
-                    "</td>" +
-                    "</tr>";
-            });
+            html +=
+                "<tr>" +
+                "<td>" + time + "</td>" +
+                "<td>" +
+                "<div class='lecture " +
+                (isLab ? "lab" : "") +
+                "'>" +
+                "<b>" +
+                lecture.subject +
+                "</b>" +
+                "</div>" +
+                "</td>" +
+                "<td>" +
+                (lecture.teacher || "-") +
+                "</td>" +
+                "<td>" +
+                lecture.room +
+                "</td>" +
+                "</tr>";
 
         } else {
 
