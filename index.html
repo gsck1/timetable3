@@ -27,59 +27,26 @@
     </div>
 
     <div id="student" class="card hidden">
-    <h2>🎓 Student Portal</h2>
+        <h2>🎓 Student Portal</h2>
+        <label>Student Name</label>
+        <input id="studentName" placeholder="Enter your name">
 
+        <label>Year</label>
+        <select id="studentYear" onchange="yearChanged()">
+            <option value="">Select Year</option>
+            <option value="BCA-I">BCA-I</option>
+            <option value="BCA-II">BCA-II</option>
+            <option value="BCA-III">BCA-III</option>
+        </select>
 
-<label>Student Name</label>
-<input id="studentName" placeholder="Enter your name">
-
-<label>Year</label>
-<select id="studentYear" onchange="yearChanged()">
-    <option value="">Select Year</option>
-    <option value="BCA-I">BCA-I</option>
-    <option value="BCA-II">BCA-II</option>
-    <option value="BCA-III">BCA-III</option>
-</select>
-
-<div id="streamBox" class="hidden">
-
-<label>Select Stream</label>
-
-<select id="studentStream">
-
-<option value="">Select Stream</option>
-
-<option value="AI">AI</option>
-
-<option value="DS">DS</option>
-
-</select>
-
-</div>
-
-<div class="view-toggle">
-    <button id="studentBtnDaily" class="active" onclick="setStudentView('daily')">
-        Daily Schedule
-    </button>
-
-    <button id="studentBtnWeekly" onclick="setStudentView('weekly')">
-        Weekly Schedule
-    </button>
-</div>
-
-<div id="studentDateBox">
-    <label>Select Date</label>
-    <input type="date" id="studentDate" onchange="loadStudentTimetableDisplay()">
-</div>
-
-<button onclick="loadStudentTimetableDisplay()">Show Timetable</button>
-<button class="back" onclick="goHome()">Back</button>
-
-<div id="studentResult"></div>
-
-
-</div>
-
+        <div id="streamBox" class="hidden">
+            <label>3rd Year Stream</label>
+            <select id="studentStream">
+                <option value="">Select Stream</option>
+                <option value="BCA-III (AI)">AI</option>
+                <option value="BCA-III (DS)">DS</option>
+            </select>
+        </div>
 
         <div class="view-toggle">
             <button id="studentBtnDaily" class="active" onclick="setStudentView('daily')">Daily Schedule</button>
@@ -181,17 +148,13 @@
                 <option>Saturday</option>
             </select>
 
-            
             <label>Class</label>
             <select id="aClass">
-            <option value="BCA-I(AI)">BCA-I(AI)</option>
-            <option value="BCA-I(DS)">BCA-I(DS)</option>
-            <option value="BCA-II(AI)">BCA-II(AI)</option>
-            <option value="BCA-II(DS)">BCA-II(DS)</option>
-            <option value="BCA-III(AI)">BCA-III(AI)</option>
-            <option value="BCA-III(DS)">BCA-III(DS)</option>
+                <option>BCA-I</option>
+                <option>BCA-II</option>
+                <option>BCA-III (AI)</option>
+                <option>BCA-III (DS)</option>
             </select>
-
 
             <label>Time</label>
             <select id="aTime"></select>
