@@ -233,7 +233,8 @@ if (!year || !stream) {
     return "";
 }
 
-return year + "(" + stream + ")";
+// EXACT Google Sheet class name
+return year + " (" + stream + ")";
 
 }
 
